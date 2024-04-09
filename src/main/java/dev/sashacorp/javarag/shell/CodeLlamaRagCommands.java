@@ -1,24 +1,30 @@
 package dev.sashacorp.javarag.shell;
 
+import java.util.UUID;
+
+import dev.sashacorp.javarag.langchain.OllamaChatService;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.component.StringInput;
-import org.springframework.shell.jline.PromptProvider;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.springframework.stereotype.Component;
 
 @ShellComponent
 class CodeLlamaRagCommands extends AbstractShellComponent {
+    public static final String BYE = "/bye";
+
+    private final OllamaChatService ollamaChatService;
     private final ContextService contextService;
     private final SetupPromptProvider setupPromptProvider;
 
     CodeLlamaRagCommands(
+            OllamaChatService ollamaChatService,
             ContextService contextService,
             SetupPromptProvider setupPromptProvider
     ) {
+        this.ollamaChatService = ollamaChatService;
         this.contextService = contextService;
         this.setupPromptProvider = setupPromptProvider;
     }
@@ -33,50 +39,55 @@ class CodeLlamaRagCommands extends AbstractShellComponent {
 
         contextService.setup(repository);
 
-        print("🚀 You're ready to chat with the code in " + repository);
+        userPrint("🚀 You're ready to chat with the code in " + repository);
 
         StringInput component = new StringInput(getTerminal());
+
         component.setResourceLoader(getResourceLoader());
         component.setTemplateExecutor(getTemplateExecutor());
 
         StringInput.StringInputContext context;
 
+        var chatId = UUID.randomUUID();
+
         do {
             context = component.run(StringInput.StringInputContext.empty());
-        } while (!context.getResultValue().equals("/bye"));
+
+            if (shouldContinue(context)) {
+                assistantPrint(ollamaChatService.answer(chatId.toString(), context.getResultValue()));
+                newLine();
+            }
+        } while (shouldContinue(context));
 
         contextService.cleanup();
 
-        return withPrompt("🧹 Context cleared successfully!");
+        return getGoodbyeMessage();
     }
 
-    private void print(String toPrint) {
+    private boolean shouldContinue(StringInput.StringInputContext context) {
+        return context.getResultValue() != null && !context.getResultValue().equals(BYE);
+    }
+
+    private void userPrint(String toPrint) {
         getTerminal().writer().println(setupPromptProvider.getPrompt().toAnsi(getTerminal()) + toPrint);
     }
 
-    private String withPrompt(String string) {
-        return setupPromptProvider.getPrompt().toAnsi(getTerminal()) + string;
+    private void newLine() {
+        getTerminal().writer().println();
+    }
+
+    private void assistantPrint(String toPrint) {
+        getTerminal().writer().println(getAssistantPrompt().toAnsi(getTerminal()) + toPrint);
+    }
+
+    private String getGoodbyeMessage() {
+        return "\n" + setupPromptProvider.getPrompt().toAnsi(getTerminal()) + "🧹 Context cleared successfully! See you soon 🖖";
+    }
+
+    private AttributedString getAssistantPrompt() {
+        return new AttributedString(
+                "🦙 CodeLlama:\n",
+                AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN)
+        );
     }
 }
-
-@Component
-record SetupPromptProvider(ContextService contextService) implements PromptProvider {
-
-    @Override
-    public AttributedString getPrompt() {
-        var isReady = contextService.isReady();
-
-        var readyPrompt = new AttributedString(
-                " repo: " + contextService.repo() + " > ",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN)
-        );
-
-        var notReadyPrompt = new AttributedString(
-                " repo: none > ",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW)
-        );
-
-        return isReady ? readyPrompt : notReadyPrompt;
-    }
-}
-
