@@ -17,16 +17,16 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
 
     private final OllamaChatService ollamaChatService;
     private final ContextService contextService;
-    private final ContextPromptProvider contextPromptProvider;
+    private final ContextualPromptProvider contextualPromptProvider;
 
     CodeLlamaRagCommands(
             OllamaChatService ollamaChatService,
             ContextService contextService,
-            ContextPromptProvider contextPromptProvider
+            ContextualPromptProvider contextualPromptProvider
     ) {
         this.ollamaChatService = ollamaChatService;
         this.contextService = contextService;
-        this.contextPromptProvider = contextPromptProvider;
+        this.contextualPromptProvider = contextualPromptProvider;
     }
 
     @ShellMethod(key = "chat", value = "Start to chat with a GitHub repository.", group = "RAG Chat")
@@ -69,19 +69,19 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
     }
 
     private void userPrint(String toPrint) {
-        getTerminal().writer().println(contextPromptProvider.getPrompt().toAnsi(getTerminal()) + toPrint);
-    }
-
-    private void newLine() {
-        getTerminal().writer().println();
+        getTerminal().writer().println(contextualPromptProvider.getPrompt().toAnsi(getTerminal()) + toPrint);
     }
 
     private void assistantPrint(String toPrint) {
         getTerminal().writer().println(getAssistantPrompt().toAnsi(getTerminal()) + toPrint);
     }
 
+    private void newLine() {
+        getTerminal().writer().println();
+    }
+
     private String getGoodbyeMessage() {
-        return "\n" + contextPromptProvider.getPrompt().toAnsi(getTerminal()) + "🧹 Context cleared successfully! See you soon 🖖";
+        return "\n" + contextualPromptProvider.getPrompt().toAnsi(getTerminal()) + "🧹 Context cleared successfully! See you soon 🖖";
     }
 
     private AttributedString getAssistantPrompt() {
