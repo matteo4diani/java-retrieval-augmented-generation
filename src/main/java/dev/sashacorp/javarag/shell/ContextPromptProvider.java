@@ -6,7 +6,7 @@ import org.springframework.shell.jline.PromptProvider;
 import org.springframework.stereotype.Component;
 
 @Component
-record SetupPromptProvider(ContextService contextService) implements PromptProvider {
+public record ContextPromptProvider(ContextService contextService) implements PromptProvider {
 
     @Override
     public AttributedString getPrompt() {

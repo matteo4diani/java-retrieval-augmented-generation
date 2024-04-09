@@ -12,21 +12,21 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
-class CodeLlamaRagCommands extends AbstractShellComponent {
+public class CodeLlamaRagCommands extends AbstractShellComponent {
     public static final String BYE = "/bye";
 
     private final OllamaChatService ollamaChatService;
     private final ContextService contextService;
-    private final SetupPromptProvider setupPromptProvider;
+    private final ContextPromptProvider contextPromptProvider;
 
     CodeLlamaRagCommands(
             OllamaChatService ollamaChatService,
             ContextService contextService,
-            SetupPromptProvider setupPromptProvider
+            ContextPromptProvider contextPromptProvider
     ) {
         this.ollamaChatService = ollamaChatService;
         this.contextService = contextService;
-        this.setupPromptProvider = setupPromptProvider;
+        this.contextPromptProvider = contextPromptProvider;
     }
 
     @ShellMethod(key = "chat", value = "Start to chat with a GitHub repository.", group = "RAG Chat")
@@ -69,7 +69,7 @@ class CodeLlamaRagCommands extends AbstractShellComponent {
     }
 
     private void userPrint(String toPrint) {
-        getTerminal().writer().println(setupPromptProvider.getPrompt().toAnsi(getTerminal()) + toPrint);
+        getTerminal().writer().println(contextPromptProvider.getPrompt().toAnsi(getTerminal()) + toPrint);
     }
 
     private void newLine() {
@@ -81,7 +81,7 @@ class CodeLlamaRagCommands extends AbstractShellComponent {
     }
 
     private String getGoodbyeMessage() {
-        return "\n" + setupPromptProvider.getPrompt().toAnsi(getTerminal()) + "🧹 Context cleared successfully! See you soon 🖖";
+        return "\n" + contextPromptProvider.getPrompt().toAnsi(getTerminal()) + "🧹 Context cleared successfully! See you soon 🖖";
     }
 
     private AttributedString getAssistantPrompt() {

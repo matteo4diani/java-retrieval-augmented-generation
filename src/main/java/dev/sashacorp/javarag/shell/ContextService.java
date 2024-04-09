@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Service;
 
 @Service
-class ContextService {
+public class ContextService {
     private final AtomicReference<String> repository = new AtomicReference<>();
 
     void setup(String repo) {
