@@ -18,13 +18,20 @@ public record TerminalService(
         terminal.writer().println();
     }
 
-    public String contextualPrompt() {
+    public String getContextualPrompt() {
         return contextualPromptProvider.getPrompt().toAnsi(terminal);
     }
 
     public void printWithUserPrompt(String toPrint) {
         printLine(
-                contextualPrompt() + toPrint
+                getContextualPrompt() + toPrint
+        );
+    }
+
+    public AttributedString getAssistantPrompt() {
+        return new AttributedString(
+                "🦙 CodeLlama: ",
+                AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN)
         );
     }
 
@@ -32,14 +39,11 @@ public record TerminalService(
         printLine(getAssistantPrompt().toAnsi(terminal) + toPrint);
     }
 
-    public String getGoodbyeMessage() {
-        return "\n" + contextualPrompt() + "🧹 Context cleared successfully! See you soon 🖖";
+    public String getReadyMessage() {
+        return "🚀 You're ready to chat with the Code Llama 🦙 Input '/bye' to quit the current chat.";
     }
 
-    public AttributedString getAssistantPrompt() {
-        return new AttributedString(
-                "🦙 CodeLlama:\n",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN)
-        );
+    public String getGoodbyeMessage() {
+        return "\n" + getContextualPrompt() + "👋 See you soon 🦙";
     }
 }

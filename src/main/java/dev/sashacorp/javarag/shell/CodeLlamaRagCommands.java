@@ -37,7 +37,8 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
 
         contextService.setup(repository);
 
-        terminal.printWithUserPrompt("🚀 You're ready to chat with the code in " + repository);
+        terminal.printWithUserPrompt(terminal.getReadyMessage());
+        terminal.newLine();
 
         StringInput component = new StringInput(getTerminal());
 
