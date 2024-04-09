@@ -3,8 +3,6 @@ package dev.sashacorp.javarag.shell;
 import java.util.UUID;
 
 import dev.sashacorp.javarag.langchain.OllamaChatService;
-import org.jline.utils.AttributedString;
-import org.jline.utils.AttributedStyle;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.shell.standard.ShellComponent;
@@ -17,16 +15,16 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
 
     private final OllamaChatService ollamaChatService;
     private final ContextService contextService;
-    private final ContextualPromptProvider contextualPromptProvider;
+    private final TerminalService terminal;
 
     CodeLlamaRagCommands(
             OllamaChatService ollamaChatService,
             ContextService contextService,
-            ContextualPromptProvider contextualPromptProvider
+            TerminalService terminalService
     ) {
         this.ollamaChatService = ollamaChatService;
         this.contextService = contextService;
-        this.contextualPromptProvider = contextualPromptProvider;
+        this.terminal = terminalService;
     }
 
     @ShellMethod(key = "chat", value = "Start to chat with a GitHub repository.", group = "RAG Chat")
@@ -39,7 +37,7 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
 
         contextService.setup(repository);
 
-        userPrint("🚀 You're ready to chat with the code in " + repository);
+        terminal.printWithUserPrompt("🚀 You're ready to chat with the code in " + repository);
 
         StringInput component = new StringInput(getTerminal());
 
@@ -54,40 +52,24 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
             context = component.run(StringInput.StringInputContext.empty());
 
             if (shouldContinue(context)) {
-                assistantPrint(ollamaChatService.answer(chatId.toString(), context.getResultValue()));
-                newLine();
+                terminal.printWithAssistantPrompt(
+                        ollamaChatService.answer(
+                                chatId.toString(),
+                                context.getResultValue()
+                        )
+                );
+
+                terminal.newLine();
             }
         } while (shouldContinue(context));
 
         contextService.cleanup();
 
-        return getGoodbyeMessage();
+        return terminal.getGoodbyeMessage();
     }
 
     private boolean shouldContinue(StringInput.StringInputContext context) {
-        return context.getResultValue() != null && !context.getResultValue().equals(BYE);
-    }
-
-    private void userPrint(String toPrint) {
-        getTerminal().writer().println(contextualPromptProvider.getPrompt().toAnsi(getTerminal()) + toPrint);
-    }
-
-    private void assistantPrint(String toPrint) {
-        getTerminal().writer().println(getAssistantPrompt().toAnsi(getTerminal()) + toPrint);
-    }
-
-    private void newLine() {
-        getTerminal().writer().println();
-    }
-
-    private String getGoodbyeMessage() {
-        return "\n" + contextualPromptProvider.getPrompt().toAnsi(getTerminal()) + "🧹 Context cleared successfully! See you soon 🖖";
-    }
-
-    private AttributedString getAssistantPrompt() {
-        return new AttributedString(
-                "🦙 CodeLlama:\n",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN)
-        );
+        return context.getResultValue() != null
+                && !context.getResultValue().equals(BYE);
     }
 }
