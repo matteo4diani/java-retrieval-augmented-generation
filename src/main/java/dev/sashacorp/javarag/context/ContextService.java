@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import dev.sashacorp.javarag.data.DocumentService;
-import dev.sashacorp.javarag.git.GitService;
+import dev.sashacorp.javarag.data.GitService;
 import org.jline.terminal.Terminal;
 import org.springframework.stereotype.Service;
 

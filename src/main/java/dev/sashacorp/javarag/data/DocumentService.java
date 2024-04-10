@@ -6,8 +6,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.Metadata;
@@ -17,7 +22,9 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.file.PathUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jline.terminal.Terminal;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +32,8 @@ import org.springframework.stereotype.Service;
 public record DocumentService(
         EmbeddingModel embeddingModel,
         EmbeddingStore<TextSegment> embeddingStore,
-        ResourceLoader resourceLoader
+        ResourceLoader resourceLoader,
+        Terminal terminal
 ) {
     public static final String REPO_FOLDER = "data/github/";
 
@@ -33,26 +41,60 @@ public record DocumentService(
             String repoName
     ) {
         final String repoPath = REPO_FOLDER + repoName;
-        final String filePath = repoPath + "/README.md";
 
-        try (FileInputStream inputStream = new FileInputStream(filePath)) {
-            final var fileContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            final var file = new File(filePath);
-
-            var document = buildDocumentFromResource(repoName, repoPath, file, fileContent);
-
-            var ingestor = EmbeddingStoreIngestor
-                    .builder()
-                    .documentSplitter(recursive(200, 0))
-                    .embeddingModel(embeddingModel)
-                    .embeddingStore(embeddingStore)
-                    .build();
-
-            ingestor.ingest(document);
-
+        try (Stream<Path> pathStream = Files.walk(Paths.get(repoPath))) {
+            pathStream
+                    .filter(getPathPredicate())
+                    .map(Path::toFile)
+                    .forEach(buildFileInjectionConsumer(repoName, repoPath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @NotNull
+    private Predicate<Path> getPathPredicate() {
+        return path -> {
+            try {
+
+                var isRegularFile = Files.isRegularFile(path);
+                var isHidden = Files.isHidden(path);
+                var isJar = FilenameUtils.getExtension(path.getFileName().toString()).contains("jar");
+                var isGitFile = path.toString().contains(".git");
+                var isExecutable = Files.isExecutable(path) || isJar;
+                var isReadable = Files.isReadable(path);
+
+                var shouldIngest = isRegularFile && isReadable && !isHidden && !isExecutable && !isGitFile;
+                if (shouldIngest) terminal.writer().println(" 👉🏼 Accepting " + path);
+                else terminal.writer().println(" ✋🏻 Ignoring " + path);
+                return shouldIngest;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    @NotNull
+    private Consumer<File> buildFileInjectionConsumer(String repoName, String repoPath) {
+        return file -> {
+            try (FileInputStream inputStream = new FileInputStream(file)) {
+                final var fileContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+                var document = buildDocumentFromResource(repoName, repoPath, file, fileContent);
+
+                var ingestor = EmbeddingStoreIngestor
+                        .builder()
+                        .documentSplitter(recursive(200, 0))
+                        .embeddingModel(embeddingModel)
+                        .embeddingStore(embeddingStore)
+                        .build();
+
+                ingestor.ingest(document);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 
     @NotNull

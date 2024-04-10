@@ -1,4 +1,4 @@
-package dev.sashacorp.javarag.git;
+package dev.sashacorp.javarag.data;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
