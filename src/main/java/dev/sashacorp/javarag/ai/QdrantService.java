@@ -1,4 +1,4 @@
-package dev.sashacorp.javarag.langchain;
+package dev.sashacorp.javarag.ai;
 
 import java.util.concurrent.ExecutionException;
 
@@ -24,5 +24,9 @@ public record QdrantService(
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void ingestRecords(String repoName) {
+
     }
 }

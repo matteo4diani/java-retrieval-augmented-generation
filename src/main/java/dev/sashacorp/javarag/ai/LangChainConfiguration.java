@@ -1,4 +1,4 @@
-package dev.sashacorp.javarag.langchain;
+package dev.sashacorp.javarag.ai;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;

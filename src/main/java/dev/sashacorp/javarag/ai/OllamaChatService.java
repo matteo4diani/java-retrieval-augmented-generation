@@ -1,4 +1,4 @@
-package dev.sashacorp.javarag.langchain;
+package dev.sashacorp.javarag.ai;
 
 import org.springframework.stereotype.Service;
 

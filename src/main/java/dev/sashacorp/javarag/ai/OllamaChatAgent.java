@@ -1,4 +1,4 @@
-package dev.sashacorp.javarag.langchain;
+package dev.sashacorp.javarag.ai;
 
 import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;

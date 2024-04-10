@@ -46,4 +46,9 @@ public record TerminalService(
     public String getGoodbyeMessage() {
         return "\n" + getContextualPrompt() + "👋 See you soon 🦙";
     }
+
+    public String getErrorMessage() {
+        return "\n" + getContextualPrompt() + "🚨 Something went wrong, try again 😿";
+    }
+
 }

@@ -2,7 +2,7 @@ package dev.sashacorp.javarag.shell;
 
 import java.util.UUID;
 
-import dev.sashacorp.javarag.langchain.OllamaChatService;
+import dev.sashacorp.javarag.ai.OllamaChatService;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.shell.standard.ShellComponent;
@@ -35,7 +35,11 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
             ) String repository
     ) {
 
-        contextService.setup(repository);
+        boolean isReady = contextService.setup(repository);
+
+        if (!isReady) {
+            return terminal.getErrorMessage();
+        }
 
         terminal.printWithUserPrompt(terminal.getReadyMessage());
         terminal.newLine();
