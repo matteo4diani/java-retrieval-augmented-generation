@@ -22,7 +22,6 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.file.PathUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jline.terminal.Terminal;
 import org.springframework.core.io.ResourceLoader;

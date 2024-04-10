@@ -15,9 +15,7 @@ public record GitService(Terminal terminal) {
         String cloneDirectoryPath = "data/github/" + repoName;
         Path path = Paths.get(cloneDirectoryPath);
 
-        if (path.toFile().exists()) {
-            return true;
-        }
+        if (path.toFile().exists()) path.toFile().delete();
 
         try {
             Git.cloneRepository()
