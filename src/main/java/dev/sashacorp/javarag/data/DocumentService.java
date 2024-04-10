@@ -20,6 +20,9 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
+import dev.sashacorp.javarag.constants.Folders;
+import dev.sashacorp.javarag.constants.MetadataKeys;
+import dev.sashacorp.javarag.constants.ModelParameters;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -34,15 +37,10 @@ public record DocumentService(
         ResourceLoader resourceLoader,
         Terminal terminal
 ) {
-    public static final int CHUNK_MAX_CHARS = 500;
-    public static final int CHUNK_MAX_OVERLAP = 0;
-
-    public static final String REPO_FOLDER = "data/github/";
-
     public void ingestDocuments(
             String repoName
     ) {
-        final String repoPath = REPO_FOLDER + repoName;
+        final String repoPath = Folders.REPO_FOLDER + repoName;
 
         try (Stream<Path> pathStream = Files.walk(Paths.get(repoPath))) {
             pathStream
@@ -82,11 +80,11 @@ public record DocumentService(
             try (FileInputStream inputStream = new FileInputStream(file)) {
                 final var fileContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
-                var document = buildDocumentFromResource(repoName, repoPath, file, fileContent);
+                var document = buildDocumentFromResource(repoName, file, fileContent);
 
                 var ingestor = EmbeddingStoreIngestor
                         .builder()
-                        .documentSplitter(recursive(CHUNK_MAX_CHARS, CHUNK_MAX_OVERLAP))
+                        .documentSplitter(recursive(ModelParameters.CHUNK_MAX_CHARS, ModelParameters.CHUNK_MAX_OVERLAP))
                         .embeddingModel(embeddingModel)
                         .embeddingStore(embeddingStore)
                         .build();
@@ -100,20 +98,18 @@ public record DocumentService(
     }
 
     @NotNull
-    private static Document buildDocumentFromResource(String repo, String repoPath, File file, String fileContent) throws IOException {
+    private static Document buildDocumentFromResource(String repo, File file, String fileContent) throws IOException {
         return new Document(
                 fileContent,
                 Metadata.from(
                         Map.of(
-                                "repository",
+                                MetadataKeys.REPOSITORY,
                                 repo,
-                                "fileType",
+                                MetadataKeys.FILE_TYPE,
                                 FilenameUtils.getExtension(file.getName()),
-                                "name",
+                                MetadataKeys.NAME,
                                 file.getName(),
-                                "path",
-                                file.toPath().relativize(Path.of(repoPath)).toString(),
-                                "parent",
+                                MetadataKeys.PARENT,
                                 file.getParent()
                         )
                 )

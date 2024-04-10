@@ -1,6 +1,7 @@
 package dev.sashacorp.javarag.shell;
 
 import dev.sashacorp.javarag.context.ContextService;
+import org.jetbrains.annotations.NotNull;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.jline.PromptProvider;
@@ -15,16 +16,24 @@ public record ShellPromptProvider(
     public AttributedString getPrompt() {
         var isReady = contextService.isReady();
 
-        var readyPrompt = new AttributedString(
+        var readyPrompt = buildPrompt(
                 " repo: " + contextService.repository() + " > ",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN)
+                AttributedStyle.GREEN
         );
 
-        var notReadyPrompt = new AttributedString(
+        var notReadyPrompt = buildPrompt(
                 " repo: none > ",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW)
+                AttributedStyle.YELLOW
         );
 
         return isReady ? readyPrompt : notReadyPrompt;
+    }
+
+    @NotNull
+    private AttributedString buildPrompt(String prompt, int foregroundColor) {
+        return new AttributedString(
+                prompt,
+                AttributedStyle.DEFAULT.foreground(foregroundColor)
+        );
     }
 }

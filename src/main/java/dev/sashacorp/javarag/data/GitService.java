@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import dev.sashacorp.javarag.constants.Folders;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -13,8 +14,8 @@ import org.springframework.stereotype.Service;
 @Service
 public record GitService(Terminal terminal) {
     public boolean cloneRepo(String repoName) {
-        String repoUrl = "https://github.com/" + repoName + ".git";
-        String cloneDirectoryPath = "data/github/" + repoName;
+        String repoUrl = buildGitHubUrl(repoName);
+        String cloneDirectoryPath = Folders.REPO_FOLDER + repoName;
         Path path = Paths.get(cloneDirectoryPath);
 
         try {
@@ -31,5 +32,9 @@ public record GitService(Terminal terminal) {
             terminal.writer().println(" ⚠️  Exception occurred while cloning repo '" + repoUrl + "'");
             return false;
         }
+    }
+
+    private String buildGitHubUrl(String repoName) {
+        return "https://github.com/" + repoName + ".git";
     }
 }

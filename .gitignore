@@ -37,3 +37,12 @@ javarag.log
 
 ### Qdrant ###
 /data/
+
+### LocalAI ###
+/models/
+
+### Generation ###
+/generated/*
+
+### Variables ###
+.env
