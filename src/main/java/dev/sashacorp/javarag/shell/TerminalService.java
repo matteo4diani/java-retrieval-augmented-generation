@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public record TerminalService(
         Terminal terminal,
-        ContextualPromptProvider contextualPromptProvider
+        ShellPromptProvider shellPromptProvider
 ) {
     public void printLine(String toPrint) {
         terminal.writer().println(toPrint);
@@ -19,7 +19,7 @@ public record TerminalService(
     }
 
     public String getContextualPrompt() {
-        return contextualPromptProvider.getPrompt().toAnsi(terminal);
+        return shellPromptProvider.getPrompt().toAnsi(terminal);
     }
 
     public void printWithUserPrompt(String toPrint) {

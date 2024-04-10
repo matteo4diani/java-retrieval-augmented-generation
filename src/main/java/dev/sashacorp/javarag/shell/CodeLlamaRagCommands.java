@@ -2,7 +2,8 @@ package dev.sashacorp.javarag.shell;
 
 import java.util.UUID;
 
-import dev.sashacorp.javarag.ai.OllamaChatService;
+import dev.sashacorp.javarag.ai.OllamaChatAgent;
+import dev.sashacorp.javarag.context.ContextService;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.shell.standard.ShellComponent;
@@ -13,18 +14,19 @@ import org.springframework.shell.standard.ShellOption;
 public class CodeLlamaRagCommands extends AbstractShellComponent {
     public static final String BYE = "/bye";
 
-    private final OllamaChatService ollamaChatService;
-    private final ContextService contextService;
+    private final OllamaChatAgent ollamaChatAgent;
+    private final ContextService context;
+
     private final TerminalService terminal;
 
     CodeLlamaRagCommands(
-            OllamaChatService ollamaChatService,
-            ContextService contextService,
-            TerminalService terminalService
+            OllamaChatAgent ollamaChatAgent,
+            ContextService context,
+            TerminalService terminal
     ) {
-        this.ollamaChatService = ollamaChatService;
-        this.contextService = contextService;
-        this.terminal = terminalService;
+        this.ollamaChatAgent = ollamaChatAgent;
+        this.context = context;
+        this.terminal = terminal;
     }
 
     @ShellMethod(key = "chat", value = "Start to chat with a GitHub repository.", group = "RAG Chat")
@@ -35,7 +37,7 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
             ) String repository
     ) {
 
-        boolean isReady = contextService.setup(repository);
+        boolean isReady = context.setup(repository);
 
         if (!isReady) {
             return terminal.getErrorMessage();
@@ -49,26 +51,26 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
         component.setResourceLoader(getResourceLoader());
         component.setTemplateExecutor(getTemplateExecutor());
 
-        StringInput.StringInputContext context;
+        StringInput.StringInputContext stringInputContext;
 
         var chatId = UUID.randomUUID();
 
         do {
-            context = component.run(StringInput.StringInputContext.empty());
+            stringInputContext = component.run(StringInput.StringInputContext.empty());
 
-            if (shouldContinue(context)) {
+            if (shouldContinue(stringInputContext)) {
                 terminal.printWithAssistantPrompt(
-                        ollamaChatService.answer(
+                        ollamaChatAgent.chat(
                                 chatId.toString(),
-                                context.getResultValue()
+                                stringInputContext.getResultValue()
                         )
                 );
 
                 terminal.newLine();
             }
-        } while (shouldContinue(context));
+        } while (shouldContinue(stringInputContext));
 
-        contextService.cleanup();
+        context.cleanup();
 
         return terminal.getGoodbyeMessage();
     }

@@ -1,12 +1,13 @@
 package dev.sashacorp.javarag.shell;
 
+import dev.sashacorp.javarag.context.ContextService;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.jline.PromptProvider;
 import org.springframework.stereotype.Component;
 
 @Component
-public record ContextualPromptProvider(
+public record ShellPromptProvider(
         ContextService contextService
 ) implements PromptProvider {
 
@@ -15,7 +16,7 @@ public record ContextualPromptProvider(
         var isReady = contextService.isReady();
 
         var readyPrompt = new AttributedString(
-                " repo: " + contextService.repo() + " > ",
+                " repo: " + contextService.repository() + " > ",
                 AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN)
         );
 

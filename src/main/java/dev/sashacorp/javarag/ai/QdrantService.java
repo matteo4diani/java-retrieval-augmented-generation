@@ -25,8 +25,4 @@ public record QdrantService(
             throw new RuntimeException(e);
         }
     }
-
-    public void ingestRecords(String repoName) {
-
-    }
 }

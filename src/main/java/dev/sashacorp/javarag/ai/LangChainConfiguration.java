@@ -1,5 +1,7 @@
 package dev.sashacorp.javarag.ai;
 
+import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
+
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -12,6 +14,7 @@ import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
+import dev.sashacorp.javarag.context.ContextService;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
 import io.qdrant.client.grpc.Collections;
@@ -79,11 +82,13 @@ public class LangChainConfiguration {
     @Bean
     ContentRetriever contentRetriever(
             EmbeddingStore<TextSegment> embeddingStore,
-            EmbeddingModel embeddingModel
+            EmbeddingModel embeddingModel,
+            ContextService context
     ) {
         return EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
+                .dynamicFilter(query -> metadataKey("repository").isEqualTo(context.repository()))
                 .maxResults(QDRANT_MAX_RESULTS)
                 .minScore(QDRANT_MIN_SCORE)
                 .build();
