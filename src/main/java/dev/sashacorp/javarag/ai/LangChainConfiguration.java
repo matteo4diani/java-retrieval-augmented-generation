@@ -31,7 +31,7 @@ public class LangChainConfiguration {
 
     private static final String QDRANT_HOST = "localhost";
     private static final int QDRANT_PORT = 6334;
-    private static final int QDRANT_MAX_RESULTS = 2;
+    private static final int QDRANT_MAX_RESULTS = 10;
     private static final double QDRANT_MIN_SCORE = 0.5;
 
     private static final int CHAT_MEMORY_MAX_MESSAGES = 5;
@@ -109,16 +109,22 @@ public class LangChainConfiguration {
     }
 
     @Bean
-    OllamaChatAgent ollamaChatAgent(
+    LangChainTools langchainTools() {
+        return new LangChainTools();
+    }
+    @Bean
+    LangChainChatAgent langChainChatAgent(
             ChatLanguageModel chatLanguageModel,
             ChatMemoryProvider chatMemoryProvider,
-            ContentRetriever contentRetriever
+            ContentRetriever contentRetriever,
+            LangChainTools langChainTools
     ) {
         return AiServices
-                .builder(OllamaChatAgent.class)
+                .builder(LangChainChatAgent.class)
                 .chatLanguageModel(chatLanguageModel)
                 .chatMemoryProvider(chatMemoryProvider)
                 .contentRetriever(contentRetriever)
+                .tools(langChainTools)
                 .build();
     }
 }

@@ -34,6 +34,9 @@ public record DocumentService(
         ResourceLoader resourceLoader,
         Terminal terminal
 ) {
+    public static final int CHUNK_MAX_CHARS = 500;
+    public static final int CHUNK_MAX_OVERLAP = 0;
+
     public static final String REPO_FOLDER = "data/github/";
 
     public void ingestDocuments(
@@ -83,7 +86,7 @@ public record DocumentService(
 
                 var ingestor = EmbeddingStoreIngestor
                         .builder()
-                        .documentSplitter(recursive(200, 0))
+                        .documentSplitter(recursive(CHUNK_MAX_CHARS, CHUNK_MAX_OVERLAP))
                         .embeddingModel(embeddingModel)
                         .embeddingStore(embeddingStore)
                         .build();

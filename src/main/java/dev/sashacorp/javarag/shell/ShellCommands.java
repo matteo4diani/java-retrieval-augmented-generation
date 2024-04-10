@@ -2,7 +2,7 @@ package dev.sashacorp.javarag.shell;
 
 import java.util.UUID;
 
-import dev.sashacorp.javarag.ai.OllamaChatAgent;
+import dev.sashacorp.javarag.ai.LangChainChatAgent;
 import dev.sashacorp.javarag.context.ContextService;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.standard.AbstractShellComponent;
@@ -11,20 +11,19 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
-public class CodeLlamaRagCommands extends AbstractShellComponent {
+public class ShellCommands extends AbstractShellComponent {
     public static final String BYE = "/bye";
 
-    private final OllamaChatAgent ollamaChatAgent;
+    private final LangChainChatAgent langChainChatAgent;
     private final ContextService context;
-
     private final TerminalService terminal;
 
-    CodeLlamaRagCommands(
-            OllamaChatAgent ollamaChatAgent,
+    ShellCommands(
+            LangChainChatAgent langChainChatAgent,
             ContextService context,
             TerminalService terminal
     ) {
-        this.ollamaChatAgent = ollamaChatAgent;
+        this.langChainChatAgent = langChainChatAgent;
         this.context = context;
         this.terminal = terminal;
     }
@@ -60,7 +59,7 @@ public class CodeLlamaRagCommands extends AbstractShellComponent {
 
             if (shouldContinue(stringInputContext)) {
                 terminal.printWithAssistantPrompt(
-                        ollamaChatAgent.chat(
+                        langChainChatAgent.chat(
                                 chatId.toString(),
                                 stringInputContext.getResultValue()
                         )
